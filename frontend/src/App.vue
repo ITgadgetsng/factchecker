@@ -22,7 +22,7 @@ async function checkFact() {
     })
     await client.waitForTransactionReceipt({
       hash: txHash,
-     status: 'ACCEPTED'
+     status: 'FINALIZED' as any
     })
     const answer = await client.readContract({
       address: contractAddress,
