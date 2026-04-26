@@ -8,25 +8,24 @@ const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS
 
 async function checkFact() {
   loading.value = true
-  result.value = ''
+  result.value = '⏳ Submitted! Click Get Result in 1-2 minutes...'
   try {
-    const { createClient, createAccount } = await import('genlayer-js')
-    const { studionet } = await import('genlayer-js/chains')
-    const account = createAccount()
-    const client = createClient({ chain: studionet, account })
-    
-    await client.writeContract({
-      address: contractAddress,
-      functionName: 'check_fact',
-      args: [question.value],
-      value: 0n,
-      awaited: false
+    const response = await fetch('https://studio.genlayer.com/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_sendTransaction',
+        params: [{
+          to: contractAddress,
+          data: question.value
+        }],
+        id: 1
+      })
     })
-
-    result.value = '⏳ Question submitted! Check back in a minute...'
+    console.log('submitted', await response.json())
   } catch (e) {
     console.error('FULL ERROR:', e)
-    result.value = 'Something went wrong. Try again.'
   }
   loading.value = false
 }
@@ -46,7 +45,7 @@ async function getResult() {
     result.value = answer ? '✅ TRUE' : '❌ FALSE'
   } catch (e) {
     console.error('FULL ERROR:', e)
-    result.value = 'Something went wrong.'
+    result.value = 'Could not get result yet. Try again.'
   }
   loading.value = false
 }
@@ -58,7 +57,7 @@ async function getResult() {
     <p>Ask any yes/no question and AI will fact-check it</p>
     <input v-model="question" placeholder="e.g. Is the sun a star?" />
     <button @click="checkFact" :disabled="loading">
-      {{ loading ? 'Checking...' : 'Check Fact' }}
+      {{ loading ? 'Submitting...' : 'Check Fact' }}
     </button>
     <button @click="getResult" :disabled="loading" style="margin-left: 10px; background: #059669">
       Get Result
