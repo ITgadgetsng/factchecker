@@ -40,76 +40,416 @@ async function getResult() {
 }
 </script>
 
+
 <template>
   <div class="page" :class="darkMode ? 'dark' : 'light'">
-    <div class="card">
+    <div class="bg-geo"></div>
+    <div class="bg-blur"></div>
+    <div class="card glass animate-in">
       <div class="top-bar">
-        <div class="badge">🔗 Powered by GenLayer AI</div>
-        <button class="theme-toggle" @click="toggleTheme">{{ darkMode ? '☀️ Light' : '🌙 Dark' }}</button>
+        <div class="badge">
+          <img src="/src/assets/hero.png" alt="GenLayer" class="badge-img" />
+          <span>GenLayer AI</span>
+        </div>
+        <button class="theme-toggle" @click="toggleTheme">
+          <span class="toggle-track">
+            <span class="toggle-thumb" :class="{ on: !darkMode }"></span>
+          </span>
+          <span class="toggle-label">{{ darkMode ? 'Night' : 'Day' }}</span>
+        </button>
       </div>
-      <h1>🔍 AI Fact Checker</h1>
-      <p class="subtitle">Ask any yes/no question and our decentralized AI will fact-check it on the blockchain</p>
-      <div class="examples">
+      <h1 class="fancy-title animate-title">AI Fact Checker</h1>
+      <p class="subtitle animate-sub">Ask any yes/no question and our decentralized AI will fact-check it on the blockchain</p>
+      <div class="examples animate-ex">
         <p class="examples-label">💡 Try these questions:</p>
         <div class="chips">
           <button v-for="q in examples" :key="q" class="chip" @click="fillQuestion(q)">{{ q }}</button>
         </div>
       </div>
-      <input v-model="question" placeholder="e.g. Is the sun a star?" :disabled="loading" />
-      <div class="buttons">
+      <input v-model="question" class="animate-input" placeholder="e.g. Is the sun a star?" :disabled="loading" />
+      <div class="buttons animate-btns">
         <button class="btn-primary" @click="checkFact" :disabled="loading || !question">
-          {{ loading ? '⏳ Processing...' : '🚀 Check Fact' }}
+          <span v-if="loading" class="loader"></span>
+          <span v-else>Check Fact</span>
         </button>
-        <button class="btn-secondary" @click="getResult" :disabled="loading">📊 Get Result</button>
+        <button class="btn-secondary" @click="getResult" :disabled="loading">Get Result</button>
       </div>
-      <div v-if="submitted" class="submitted-msg">✅ Submitted! Wait 1-2 minutes then click <strong>Get Result</strong></div>
-      <div v-if="result" class="result" :class="resultType">{{ result }}</div>
-      <div class="footer">Built on <strong>GenLayer</strong> · Decentralized AI Consensus</div>
+      <transition name="pop">
+        <div v-if="submitted" class="submitted-msg">✅ Submitted! Wait 1-2 minutes then click <strong>Get Result</strong></div>
+      </transition>
+      <transition name="pop">
+        <div v-if="result" class="result" :class="resultType">{{ result }}</div>
+      </transition>
+      <div class="footer animate-footer">Built on <strong>GenLayer</strong> · Decentralized AI Consensus</div>
     </div>
   </div>
 </template>
 
+
 <style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=Spectral:wght@400;700&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
-.page { font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; transition: all 0.4s; }
-.dark { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
-.light { background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 50%, #e8f5e9 100%); }
-.card { border-radius: 24px; padding: 40px; max-width: 560px; width: 100%; text-align: center; transition: all 0.4s; }
-.dark .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
-.light .card { background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 25px 50px rgba(0,0,0,0.1); }
-.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.badge { background: rgba(79,70,229,0.3); border: 1px solid rgba(79,70,229,0.5); color: #a5b4fc; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-.theme-toggle { background: rgba(79,70,229,0.15); border: 1px solid rgba(79,70,229,0.3); color: #a5b4fc; padding: 6px 16px; border-radius: 20px; font-size: 12px; cursor: pointer; }
-.light .theme-toggle { color: #4f46e5; }
-h1 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
-.dark h1 { color: #fff; }
-.light h1 { color: #1e1b4b; }
-.subtitle { font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
-.dark .subtitle { color: #94a3b8; }
-.light .subtitle { color: #475569; }
-.examples { margin-bottom: 20px; text-align: left; }
-.examples-label { font-size: 13px; color: #64748b; margin-bottom: 8px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #a5b4fc; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; }
-.light .chip { color: #4f46e5; }
-.chip:hover { background: rgba(79,70,229,0.25); }
-input { width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; outline: none; margin-bottom: 16px; transition: all 0.3s; }
-.dark input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
-.light input { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; }
-input::placeholder { color: #64748b; }
-input:focus { border-color: #4f46e5; }
-.buttons { display: flex; gap: 12px; margin-bottom: 16px; }
-.btn-primary { flex: 1; padding: 16px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-.btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79,70,229,0.4); }
-.btn-secondary { flex: 1; padding: 16px; background: rgba(5,150,105,0.2); color: #34d399; border: 1px solid rgba(5,150,105,0.4); border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-.btn-secondary:hover:not(:disabled) { transform: translateY(-2px); }
-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-.submitted-msg { background: rgba(79,70,229,0.15); border: 1px solid rgba(79,70,229,0.3); color: #a5b4fc; padding: 16px; border-radius: 12px; font-size: 14px; margin-bottom: 16px; }
-.result { padding: 24px; border-radius: 12px; font-size: 28px; font-weight: 800; margin-bottom: 16px; }
-.result.true { background: rgba(5,150,105,0.15); border: 1px solid rgba(5,150,105,0.3); color: #34d399; }
-.result.false { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
-.result.error { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; }
-.footer { font-size: 13px; margin-top: 8px; }
-.dark .footer { color: #475569; }
-.light .footer { color: #94a3b8; }
+.page {
+  font-family: 'Spectral', serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.6s cubic-bezier(.77,0,.18,1);
+}
+.dark {
+  background: radial-gradient(ellipse at 60% 40%, #0f2027 0%, #2c5364 100%);
+}
+.light {
+  background: radial-gradient(ellipse at 40% 60%, #fffbe6 0%, #f7e9d7 100%);
+}
+.bg-geo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"><rect fill="none"/><g stroke="%23e0e7ff" stroke-width="1.5" opacity="0.08"><circle cx="50%25" cy="50%25" r="40%25"/><circle cx="50%25" cy="50%25" r="30%25"/><circle cx="50%25" cy="50%25" r="20%25"/></g></svg>') center/cover no-repeat;
+}
+.bg-blur {
+  position: absolute;
+  top: 10%; left: 60%; width: 420px; height: 420px;
+  background: linear-gradient(135deg, #ffb347 0%, #00ffb8 100%);
+  filter: blur(120px) saturate(1.5);
+  opacity: 0.18;
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+  animation: float 8s ease-in-out infinite alternate;
+}
+@keyframes float {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-40px) scale(1.1); }
+}
+.card {
+  border-radius: 32px;
+  padding: 48px 40px 36px 40px;
+  max-width: 540px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 12px 48px 0 rgba(0,0,0,0.18);
+  margin: 0 auto;
+  transition: box-shadow 0.4s, background 0.4s;
+}
+.glass {
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(18px) saturate(1.2);
+  border: 1.5px solid rgba(255,255,255,0.22);
+}
+.dark .glass {
+  background: rgba(24,28,38,0.55);
+  border: 1.5px solid rgba(255,255,255,0.08);
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 18px;
+  padding: 5px 18px 5px 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffb347;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.04);
+}
+.badge-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fffbe6;
+  box-shadow: 0 2px 8px 0 rgba(255,179,71,0.12);
+}
+.theme-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  outline: none;
+}
+.toggle-track {
+  width: 38px;
+  height: 22px;
+  background: #e0e7ff;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+}
+.dark .toggle-track {
+  background: #2c5364;
+}
+.toggle-thumb {
+  width: 18px;
+  height: 18px;
+  background: #ffb347;
+  border-radius: 50%;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  transition: left 0.3s cubic-bezier(.77,0,.18,1), background 0.3s;
+  box-shadow: 0 2px 8px 0 rgba(255,179,71,0.18);
+}
+.toggle-thumb.on {
+  left: 18px;
+  background: #00ffb8;
+}
+.toggle-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: #2c5364;
+  font-weight: 700;
+}
+.dark .toggle-label {
+  color: #ffb347;
+}
+.fancy-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  margin-bottom: 10px;
+  color: #2c5364;
+  text-shadow: 0 2px 12px #ffb34733;
+}
+.dark .fancy-title {
+  color: #ffb347;
+  text-shadow: 0 2px 12px #2c536433;
+}
+.subtitle {
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 22px;
+  color: #2c5364;
+}
+.dark .subtitle {
+  color: #e0e7ff;
+}
+.examples {
+  margin-bottom: 18px;
+  text-align: left;
+}
+.examples-label {
+  font-size: 13px;
+  color: #00ffb8;
+  margin-bottom: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  background: linear-gradient(90deg, #ffb347 0%, #00ffb8 100%);
+  color: #2c5364;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px 0 #ffb34722;
+}
+.chip:hover {
+  filter: brightness(1.1) saturate(1.2);
+  transform: scale(1.07);
+}
+input {
+  width: 100%;
+  padding: 18px;
+  border-radius: 14px;
+  font-size: 17px;
+  outline: none;
+  margin-bottom: 18px;
+  border: 1.5px solid #e0e7ff;
+  background: rgba(255,255,255,0.7);
+  color: #2c5364;
+  font-family: 'Spectral', serif;
+  transition: border-color 0.3s, background 0.3s;
+}
+.dark input {
+  background: rgba(44,83,100,0.18);
+  border: 1.5px solid #ffb347;
+  color: #ffb347;
+}
+input::placeholder {
+  color: #b0b8d1;
+}
+input:focus {
+  border-color: #00ffb8;
+  background: #fffbe6;
+}
+.dark input:focus {
+  background: #2c5364;
+}
+.buttons {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.btn-primary {
+  flex: 1;
+  padding: 16px;
+  background: linear-gradient(90deg, #ffb347 0%, #00ffb8 100%);
+  color: #2c5364;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
+  box-shadow: 0 2px 12px 0 #ffb34722;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1) saturate(1.2);
+  transform: scale(1.04);
+}
+.btn-secondary {
+  flex: 1;
+  padding: 16px;
+  background: linear-gradient(90deg, #2c5364 0%, #00ffb8 100%);
+  color: #fffbe6;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
+  box-shadow: 0 2px 12px 0 #00ffb822;
+}
+.btn-secondary:hover:not(:disabled) {
+  filter: brightness(1.1) saturate(1.2);
+  transform: scale(1.04);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+.loader {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fffbe6;
+  border-top: 3px solid #ffb347;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.submitted-msg {
+  background: rgba(0,255,184,0.08);
+  border: 1.5px solid #00ffb8;
+  color: #00ffb8;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 15px;
+  margin-bottom: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.result {
+  padding: 26px;
+  border-radius: 14px;
+  font-size: 30px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 800;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px 0 #00ffb822;
+  animation: pop-in 0.5s cubic-bezier(.77,0,.18,1);
+}
+.result.true {
+  background: rgba(0,255,184,0.13);
+  border: 1.5px solid #00ffb8;
+  color: #00ffb8;
+}
+.result.false {
+  background: rgba(255,71,71,0.13);
+  border: 1.5px solid #ff4747;
+  color: #ff4747;
+}
+.result.error {
+  background: rgba(255,179,71,0.13);
+  border: 1.5px solid #ffb347;
+  color: #ffb347;
+}
+@keyframes pop-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.footer {
+  font-size: 13px;
+  margin-top: 10px;
+  color: #2c5364;
+  font-family: 'IBM Plex Mono', monospace;
+  opacity: 0.7;
+}
+.dark .footer {
+  color: #ffb347;
+  opacity: 0.7;
+}
+/* Animations for orchestrated entrance */
+.animate-in { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.1s both; }
+.animate-title { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.2s both; }
+.animate-sub { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.3s both; }
+.animate-ex { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.4s both; }
+.animate-input { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.5s both; }
+.animate-btns { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.6s both; }
+.animate-footer { animation: fade-in-up 1.1s cubic-bezier(.77,0,.18,1) 0.7s both; }
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.pop-enter-active, .pop-leave-active {
+  transition: all 0.4s cubic-bezier(.77,0,.18,1);
+}
+.pop-enter-from, .pop-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+.pop-enter-to, .pop-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+@media (max-width: 700px) {
+  .card {
+    padding: 24px 8px 18px 8px;
+    max-width: 98vw;
+  }
+  .fancy-title {
+    font-size: 1.5rem;
+  }
+}
 </style>
