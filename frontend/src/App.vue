@@ -175,6 +175,9 @@ async function getResult() {
   border-radius: 50%;
   background: #fffbe6;
   box-shadow: 0 2px 8px 0 rgba(255,179,71,0.12);
+  object-fit: cover;
+  object-position: center;
+  padding: 2px;
 }
 .theme-toggle {
   background: none;
