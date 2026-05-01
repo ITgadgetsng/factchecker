@@ -48,7 +48,7 @@ async function getResult() {
     <div class="card glass animate-in">
       <div class="top-bar">
         <div class="badge">
-          <img src="/src/assets/logo.png" alt="GenLayer" class="badge-img" />
+          <!-- Logo removed as per user request -->
           <span>GenLayer AI</span>
         </div>
         <button class="theme-toggle" @click="toggleTheme">
